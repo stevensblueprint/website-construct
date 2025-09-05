@@ -8,11 +8,13 @@ A reusable [AWS CDK](https://docs.aws.amazon.com/cdk/) construct to deploy a web
 - Deployment via S3
 
 ## Installation
+
 ```
 npm install website-construct
 ```
 
 ## Usage
+
 ```ts
 export class MyWebsiteStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
@@ -31,7 +33,6 @@ export class MyWebsiteStack extends cdk.Stack {
     });
   }
 }
-
 ```
 
 ## Development
