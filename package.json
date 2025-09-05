@@ -9,8 +9,7 @@
     "url": "https://github.com/stevensblueprint/website-construct"
   },
   "publishConfig": {
-    "access": "public",
-    "registry": "https://github.com/stevensblueprint/website-construct"
+    "access": "public"
   },
   "keywords": [
     "aws",
