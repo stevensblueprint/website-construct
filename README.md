@@ -9,8 +9,8 @@ A reusable [AWS CDK](https://docs.aws.amazon.com/cdk/) construct to deploy a web
 
 ## Installation
 
-```
-npm install website-construct
+```bash
+npm i @sitblueprint/website-construct
 ```
 
 ## Usage
