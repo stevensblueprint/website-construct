@@ -4,8 +4,8 @@ import * as cloudfont from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as certificatemanager from "aws-cdk-lib/aws-certificatemanager";
 import * as cdk from "aws-cdk-lib";
-import { CanonicalUserPrincipal, PolicyStatement } from "aws-cdk-lib/aws-iam";
-import { ARecord, HostedZone } from "aws-cdk-lib/aws-route53";
+import * as iam from "aws-cdk-lib/aws-iam";
+import * as route53 from "aws-cdk-lib/aws-route53";
 
 export interface DomainConfig {
   /** The root domain name (e.g., example.com).
@@ -49,11 +49,11 @@ export class WebsiteConstruct extends Construct {
       `${props.bucketName}-OAI`,
     );
     webBucket.addToResourcePolicy(
-      new PolicyStatement({
+      new iam.PolicyStatement({
         actions: ["s3:GetObject"],
         resources: [webBucket.arnForObjects("*")],
         principals: [
-          new CanonicalUserPrincipal(
+          new iam.CanonicalUserPrincipal(
             oai.cloudFrontOriginAccessIdentityS3CanonicalUserId,
           ),
         ],
@@ -90,10 +90,10 @@ export class WebsiteConstruct extends Construct {
     );
 
     if (props.domainConfig) {
-      const hostedZone = HostedZone.fromLookup(this, "HostedZone", {
+      const hostedZone = route53.HostedZone.fromLookup(this, "HostedZone", {
         domainName: props.domainConfig.domainName,
       });
-      const domainARecord = new ARecord(this, "DomainARecord", {
+      const domainARecord = new route53.ARecord(this, "DomainARecord", {
         zone: hostedZone,
         recordName: this._getFullDomainName(props.domainConfig),
         target: cdk.aws_route53.RecordTarget.fromAlias(
