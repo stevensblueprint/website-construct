@@ -37,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Initial release of WebsiteConstruct.
+- Initial release of Website.
 - Static website hosting via S3.
 - CloudFront distribution with default caching.
 - Basic index and error page support.

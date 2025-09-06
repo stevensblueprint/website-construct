@@ -20,7 +20,7 @@ export class MyWebsiteStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    new WebsiteConstruct(this, "MyWebsite", {
+    new Website(this, "MyWebsite", {
       bucketName: "my-static-site-bucket",
       indexFile: "index.html",
       errorFile: "error.html",

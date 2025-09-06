@@ -18,7 +18,7 @@ export interface DomainConfig {
   certificateArn: string;
 }
 
-export interface WebsiteConstructProps {
+export interface WebsiteProps {
   /** The name of the S3 bucket that will host the website content. */
   bucketName: string;
 
@@ -35,8 +35,8 @@ export interface WebsiteConstructProps {
   notFoundResponsePagePath?: string;
 }
 
-export class WebsiteConstruct extends Construct {
-  constructor(scope: Construct, id: string, props: WebsiteConstructProps) {
+export class Website extends Construct {
+  constructor(scope: Construct, id: string, props: WebsiteProps) {
     super(scope, id);
     const webBucket = new s3.Bucket(this, props.bucketName, {
       websiteIndexDocument: props.indexFile,

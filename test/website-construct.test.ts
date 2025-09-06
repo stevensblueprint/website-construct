@@ -1,8 +1,8 @@
 import { Template, Match } from "aws-cdk-lib/assertions";
 import * as cdk from "aws-cdk-lib";
-import { WebsiteConstruct, WebsiteConstructProps, DomainConfig } from "../lib";
+import { Website, WebsiteProps, DomainConfig } from "../lib";
 
-describe("WebsiteConstruct", () => {
+describe("Website", () => {
   let app: cdk.App;
   let stack: cdk.Stack;
 
@@ -22,13 +22,13 @@ describe("WebsiteConstruct", () => {
 
   describe("Basic functionality", () => {
     test("creates S3 bucket with basic configuration", () => {
-      const props: WebsiteConstructProps = {
+      const props: WebsiteProps = {
         bucketName: "test-website-bucket",
         indexFile: "index.html",
         errorFile: "error.html",
       };
 
-      new WebsiteConstruct(stack, "TestWebsite", props);
+      new Website(stack, "TestWebsite", props);
 
       const template = Template.fromStack(stack);
 
@@ -50,13 +50,13 @@ describe("WebsiteConstruct", () => {
     });
 
     test("creates CloudFront Origin Access Identity", () => {
-      const props: WebsiteConstructProps = {
+      const props: WebsiteProps = {
         bucketName: "test-website-bucket",
         indexFile: "index.html",
         errorFile: "error.html",
       };
 
-      new WebsiteConstruct(stack, "TestWebsite", props);
+      new Website(stack, "TestWebsite", props);
 
       const template = Template.fromStack(stack);
 
@@ -71,13 +71,13 @@ describe("WebsiteConstruct", () => {
     });
 
     test("creates CloudFront distribution with correct configuration", () => {
-      const props: WebsiteConstructProps = {
+      const props: WebsiteProps = {
         bucketName: "test-website-bucket",
         indexFile: "index.html",
         errorFile: "error.html",
       };
 
-      new WebsiteConstruct(stack, "TestWebsite", props);
+      new Website(stack, "TestWebsite", props);
 
       const template = Template.fromStack(stack);
 
@@ -103,14 +103,14 @@ describe("WebsiteConstruct", () => {
 
   describe("Custom error page configuration", () => {
     test("uses custom not found response page path", () => {
-      const props: WebsiteConstructProps = {
+      const props: WebsiteProps = {
         bucketName: "test-website-bucket",
         indexFile: "index.html",
         errorFile: "error.html",
         notFoundResponsePagePath: "/custom-404.html",
       };
 
-      new WebsiteConstruct(stack, "TestWebsite", props);
+      new Website(stack, "TestWebsite", props);
 
       const template = Template.fromStack(stack);
 
@@ -129,13 +129,13 @@ describe("WebsiteConstruct", () => {
     });
 
     test("uses default 404.html when notFoundResponsePagePath is not provided", () => {
-      const props: WebsiteConstructProps = {
+      const props: WebsiteProps = {
         bucketName: "test-website-bucket",
         indexFile: "index.html",
         errorFile: "error.html",
       };
 
-      new WebsiteConstruct(stack, "TestWebsite", props);
+      new Website(stack, "TestWebsite", props);
 
       const template = Template.fromStack(stack);
 
@@ -163,14 +163,14 @@ describe("WebsiteConstruct", () => {
     };
 
     test("configures CloudFront distribution with custom domain", () => {
-      const props: WebsiteConstructProps = {
+      const props: WebsiteProps = {
         bucketName: "test-website-bucket",
         indexFile: "index.html",
         errorFile: "error.html",
         domainConfig,
       };
 
-      new WebsiteConstruct(stack, "TestWebsite", props);
+      new Website(stack, "TestWebsite", props);
 
       const template = Template.fromStack(stack);
 
@@ -186,14 +186,14 @@ describe("WebsiteConstruct", () => {
     });
 
     test("creates Route53 A record when domain config is provided", () => {
-      const props: WebsiteConstructProps = {
+      const props: WebsiteProps = {
         bucketName: "test-website-bucket",
         indexFile: "index.html",
         errorFile: "error.html",
         domainConfig,
       };
 
-      new WebsiteConstruct(stack, "TestWebsite", props);
+      new Website(stack, "TestWebsite", props);
 
       const template = Template.fromStack(stack);
 
@@ -215,14 +215,14 @@ describe("WebsiteConstruct", () => {
           "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012",
       };
 
-      const props: WebsiteConstructProps = {
+      const props: WebsiteProps = {
         bucketName: "test-website-bucket",
         indexFile: "index.html",
         errorFile: "error.html",
         domainConfig: domainConfigWithoutSub,
       };
 
-      new WebsiteConstruct(stack, "TestWebsite", props);
+      new Website(stack, "TestWebsite", props);
 
       const template = Template.fromStack(stack);
 
@@ -241,13 +241,13 @@ describe("WebsiteConstruct", () => {
 
   describe("Private methods", () => {
     test("_getFullDomainName returns correct domain with subdomain", () => {
-      const props: WebsiteConstructProps = {
+      const props: WebsiteProps = {
         bucketName: "test-bucket",
         indexFile: "index.html",
         errorFile: "error.html",
       };
 
-      const construct = new WebsiteConstruct(stack, "TestWebsite", props);
+      const construct = new Website(stack, "TestWebsite", props);
 
       // Access private method through bracket notation for testing
       const getFullDomainName = (construct as any)._getFullDomainName;
@@ -263,13 +263,13 @@ describe("WebsiteConstruct", () => {
     });
 
     test("_getFullDomainName returns root domain when subdomain is empty", () => {
-      const props: WebsiteConstructProps = {
+      const props: WebsiteProps = {
         bucketName: "test-bucket",
         indexFile: "index.html",
         errorFile: "error.html",
       };
 
-      const construct = new WebsiteConstruct(stack, "TestWebsite", props);
+      const construct = new Website(stack, "TestWebsite", props);
 
       const getFullDomainName = (construct as any)._getFullDomainName;
 
@@ -286,14 +286,14 @@ describe("WebsiteConstruct", () => {
 
   describe("Edge cases", () => {
     test("handles minimal configuration", () => {
-      const props: WebsiteConstructProps = {
+      const props: WebsiteProps = {
         bucketName: "minimal-bucket",
         indexFile: "index.html",
         errorFile: "error.html",
       };
 
       expect(() => {
-        new WebsiteConstruct(stack, "TestWebsite", props);
+        new Website(stack, "TestWebsite", props);
       }).not.toThrow();
 
       const template = Template.fromStack(stack);
@@ -306,13 +306,13 @@ describe("WebsiteConstruct", () => {
     });
 
     test("does not create Route53 resources when domain config is not provided", () => {
-      const props: WebsiteConstructProps = {
+      const props: WebsiteProps = {
         bucketName: "test-bucket",
         indexFile: "index.html",
         errorFile: "error.html",
       };
 
-      new WebsiteConstruct(stack, "TestWebsite", props);
+      new Website(stack, "TestWebsite", props);
 
       const template = Template.fromStack(stack);
       template.resourceCountIs("AWS::Route53::RecordSet", 0);
