@@ -36,9 +36,11 @@ export interface WebsiteProps {
 }
 
 export class Website extends Construct {
+  public readonly bucket: s3.Bucket;
+
   constructor(scope: Construct, id: string, props: WebsiteProps) {
     super(scope, id);
-    const webBucket = new s3.Bucket(this, props.bucketName, {
+    this.bucket = new s3.Bucket(this, props.bucketName, {
       websiteIndexDocument: props.indexFile,
       websiteErrorDocument: props.errorFile,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -48,10 +50,10 @@ export class Website extends Construct {
       this,
       `${props.bucketName}-OAI`,
     );
-    webBucket.addToResourcePolicy(
+    this.bucket.addToResourcePolicy(
       new iam.PolicyStatement({
         actions: ["s3:GetObject"],
-        resources: [webBucket.arnForObjects("*")],
+        resources: [this.bucket.arnForObjects("*")],
         principals: [
           new iam.CanonicalUserPrincipal(
             oai.cloudFrontOriginAccessIdentityS3CanonicalUserId,
@@ -65,7 +67,7 @@ export class Website extends Construct {
       `${props.bucketName}-distribution`,
       {
         defaultBehavior: {
-          origin: new origins.S3StaticWebsiteOrigin(webBucket),
+          origin: new origins.S3StaticWebsiteOrigin(this.bucket),
           viewerProtocolPolicy:
             cloudfont.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         },
@@ -109,7 +111,7 @@ export class Website extends Construct {
     });
 
     new cdk.CfnOutput(this, "s3-website-url", {
-      value: webBucket.bucketWebsiteUrl,
+      value: this.bucket.bucketWebsiteUrl,
       description: "S3 Bucket Website URL",
     });
 
