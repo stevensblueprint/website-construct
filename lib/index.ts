@@ -44,12 +44,15 @@ export class Website extends Construct {
     this.bucket = new s3.Bucket(this, props.bucketName, {
       websiteIndexDocument: props.indexFile,
       websiteErrorDocument: props.errorFile,
+      publicReadAccess: true,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ACLS_ONLY,
+      accessControl: s3.BucketAccessControl.BUCKET_OWNER_FULL_CONTROL,
       encryption: s3.BucketEncryption.S3_MANAGED,
     });
     const oai = new cloudfont.OriginAccessIdentity(
       this,
-      `${props.bucketName}-OAI`,
+      `${props.bucketName}-OAI`
     );
     this.bucket.addToResourcePolicy(
       new iam.PolicyStatement({
@@ -57,10 +60,10 @@ export class Website extends Construct {
         resources: [this.bucket.arnForObjects("*")],
         principals: [
           new iam.CanonicalUserPrincipal(
-            oai.cloudFrontOriginAccessIdentityS3CanonicalUserId,
+            oai.cloudFrontOriginAccessIdentityS3CanonicalUserId
           ),
         ],
-      }),
+      })
     );
 
     this.distribution = new cloudfont.Distribution(
@@ -85,11 +88,11 @@ export class Website extends Construct {
           ? {
               domainNames: [this._getFullDomainName(props.domainConfig)],
               certificate: this._getCertificate(
-                props.domainConfig.certificateArn,
+                props.domainConfig.certificateArn
               ),
             }
           : {}),
-      },
+      }
     );
 
     if (props.domainConfig) {
@@ -100,7 +103,7 @@ export class Website extends Construct {
         zone: hostedZone,
         recordName: this._getFullDomainName(props.domainConfig),
         target: cdk.aws_route53.RecordTarget.fromAlias(
-          new cdk.aws_route53_targets.CloudFrontTarget(this.distribution),
+          new cdk.aws_route53_targets.CloudFrontTarget(this.distribution)
         ),
       });
       domainARecord.node.addDependency(this.distribution);
@@ -134,7 +137,7 @@ export class Website extends Construct {
     return certificatemanager.Certificate.fromCertificateArn(
       this,
       `website-cert`,
-      arn,
+      arn
     );
   }
 }

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v0.1.4] - 2025-09-30
+
+### Security
+
+- Hardened the website bucket policy by blocking ACLs, enforcing bucket-owner full control, and retaining S3 managed encryption.
+
 ## [v0.1.3] - 2025-09-30
 
 ### Added
