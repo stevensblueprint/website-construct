@@ -37,6 +37,7 @@ export interface WebsiteProps {
 
 export class Website extends Construct {
   public readonly bucket: s3.Bucket;
+  public readonly distribution: cloudfont.Distribution;
 
   constructor(scope: Construct, id: string, props: WebsiteProps) {
     super(scope, id);
@@ -62,7 +63,7 @@ export class Website extends Construct {
       }),
     );
 
-    const distribution = new cloudfont.Distribution(
+    this.distribution = new cloudfont.Distribution(
       this,
       `${props.bucketName}-distribution`,
       {
@@ -99,14 +100,14 @@ export class Website extends Construct {
         zone: hostedZone,
         recordName: this._getFullDomainName(props.domainConfig),
         target: cdk.aws_route53.RecordTarget.fromAlias(
-          new cdk.aws_route53_targets.CloudFrontTarget(distribution),
+          new cdk.aws_route53_targets.CloudFrontTarget(this.distribution),
         ),
       });
-      domainARecord.node.addDependency(distribution);
+      domainARecord.node.addDependency(this.distribution);
     }
 
     new cdk.CfnOutput(this, "cloudfront-website-url", {
-      value: distribution.distributionDomainName,
+      value: this.distribution.distributionDomainName,
       description: "CloudFront Distribution Domain Name",
     });
 
@@ -117,7 +118,7 @@ export class Website extends Construct {
 
     if (props.domainConfig) {
       new cdk.CfnOutput(this, "website-url", {
-        value: distribution.domainName,
+        value: this.distribution.domainName,
         description: "Website URL",
       });
     }

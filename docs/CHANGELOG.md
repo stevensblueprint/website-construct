@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v0.1.3] - 2025-09-30
+
+### Added
+
+- Exposed the CloudFront distribution as a public construct member for downstream stacks.
+
 ## [v0.1.2] - 2025-09-06
 
 ### Changed

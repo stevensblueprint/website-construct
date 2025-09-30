@@ -99,6 +99,18 @@ describe("Website", () => {
         },
       });
     });
+
+    test("exposes CloudFront distribution", () => {
+      const props: WebsiteProps = {
+        bucketName: "test-website-bucket",
+        indexFile: "index.html",
+        errorFile: "error.html",
+      };
+
+      const website = new Website(stack, "TestWebsite", props);
+
+      expect(website.distribution).toBeDefined();
+    });
   });
 
   describe("Custom error page configuration", () => {
