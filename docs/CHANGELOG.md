@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v0.1.5]
+
+### Added
+
+- `includeRootDomain` option to `DomainConfig` to deploy to both subdomain and root domain simultaneously.
+
 ## [v0.1.4] - 2025-09-30
 
 ### Security

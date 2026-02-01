@@ -6,6 +6,7 @@ A reusable [AWS CDK](https://docs.aws.amazon.com/cdk/) construct to deploy a web
 
 - CDN caching via CloudFont
 - Deployment via S3
+- Dual domain support (e.g., deploy to both `www.example.com` and `example.com` simultaneously)
 - Hardened S3 bucket defaults with bucket-owner-only ACLs and automatic SSE
 - Direct access to the underlying S3 bucket and CloudFront distribution for advanced customization
 
@@ -39,6 +40,7 @@ export class MyWebsiteStack extends cdk.Stack {
         domainName: "example.com",
         subdomainName: "www",
         certificateArn: "arn:aws:acm:us-east-1:123456789012:certificate/abc123",
+        includeRootDomain: true, // Optional: also deploy to example.com
       },
     });
 
