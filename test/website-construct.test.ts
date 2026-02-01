@@ -249,6 +249,95 @@ describe("Website", () => {
         Name: "example.com.",
       });
     });
+
+    test("configures CloudFront with both subdomain and root domain aliases when includeRootDomain is true", () => {
+      const dualDomainConfig: DomainConfig = {
+        domainName: "example.com",
+        subdomainName: "www",
+        certificateArn:
+          "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012",
+        includeRootDomain: true,
+      };
+
+      const props: WebsiteProps = {
+        bucketName: "test-website-bucket",
+        indexFile: "index.html",
+        errorFile: "error.html",
+        domainConfig: dualDomainConfig,
+      };
+
+      new Website(stack, "TestWebsite", props);
+
+      const template = Template.fromStack(stack);
+
+      template.hasResourceProperties("AWS::CloudFront::Distribution", {
+        DistributionConfig: {
+          Aliases: ["www.example.com", "example.com"],
+        },
+      });
+    });
+
+    test("creates two Route53 A records when includeRootDomain is true", () => {
+      const dualDomainConfig: DomainConfig = {
+        domainName: "example.com",
+        subdomainName: "www",
+        certificateArn:
+          "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012",
+        includeRootDomain: true,
+      };
+
+      const props: WebsiteProps = {
+        bucketName: "test-website-bucket",
+        indexFile: "index.html",
+        errorFile: "error.html",
+        domainConfig: dualDomainConfig,
+      };
+
+      new Website(stack, "TestWebsite", props);
+
+      const template = Template.fromStack(stack);
+
+      template.resourceCountIs("AWS::Route53::RecordSet", 2);
+
+      template.hasResourceProperties("AWS::Route53::RecordSet", {
+        Name: "www.example.com.",
+        Type: "A",
+      });
+
+      template.hasResourceProperties("AWS::Route53::RecordSet", {
+        Name: "example.com.",
+        Type: "A",
+      });
+    });
+
+    test("ignores includeRootDomain if subdomain is empty to avoid duplicates", () => {
+      const domainConfigWithoutSub: DomainConfig = {
+        domainName: "example.com",
+        subdomainName: "",
+        certificateArn:
+          "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012",
+        includeRootDomain: true,
+      };
+
+      const props: WebsiteProps = {
+        bucketName: "test-website-bucket",
+        indexFile: "index.html",
+        errorFile: "error.html",
+        domainConfig: domainConfigWithoutSub,
+      };
+
+      new Website(stack, "TestWebsite", props);
+
+      const template = Template.fromStack(stack);
+
+      template.resourceCountIs("AWS::Route53::RecordSet", 1);
+
+      template.hasResourceProperties("AWS::CloudFront::Distribution", {
+        DistributionConfig: {
+          Aliases: ["example.com"],
+        },
+      });
+    });
   });
 
   describe("Private methods", () => {

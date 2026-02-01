@@ -16,6 +16,11 @@ export interface DomainConfig {
   subdomainName: string;
   /** The ARN of the SSL certificate to use for the domain. */
   certificateArn: string;
+  /**
+   * If true, creates an additional Route 53 record for the root domain pointing to the CloudFront distribution.
+   * @default false
+   */
+  includeRootDomain?: boolean;
 }
 
 export interface WebsiteProps {
@@ -65,6 +70,16 @@ export class Website extends Construct {
         ],
       }),
     );
+    const domainNames: string[] = [];
+    if (props.domainConfig) {
+      domainNames.push(this._getFullDomainName(props.domainConfig));
+      if (
+        props.domainConfig.includeRootDomain &&
+        props.domainConfig.subdomainName
+      ) {
+        domainNames.push(props.domainConfig.domainName);
+      }
+    }
 
     this.distribution = new cloudfont.Distribution(
       this,
@@ -86,7 +101,7 @@ export class Website extends Construct {
         priceClass: cloudfont.PriceClass.PRICE_CLASS_100,
         ...(props.domainConfig
           ? {
-              domainNames: [this._getFullDomainName(props.domainConfig)],
+              domainNames: domainNames,
               certificate: this._getCertificate(
                 props.domainConfig.certificateArn,
               ),
@@ -107,6 +122,19 @@ export class Website extends Construct {
         ),
       });
       domainARecord.node.addDependency(this.distribution);
+
+      if (
+        props.domainConfig.includeRootDomain &&
+        props.domainConfig.subdomainName
+      ) {
+        new route53.ARecord(this, "RootDomainARecord", {
+          zone: hostedZone,
+          recordName: props.domainConfig.domainName,
+          target: cdk.aws_route53.RecordTarget.fromAlias(
+            new cdk.aws_route53_targets.CloudFrontTarget(this.distribution),
+          ),
+        }).node.addDependency(this.distribution);
+      }
     }
 
     new cdk.CfnOutput(this, "cloudfront-website-url", {
