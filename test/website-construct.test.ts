@@ -1,10 +1,6 @@
 import { Template, Match } from "aws-cdk-lib/assertions";
 import * as cdk from "aws-cdk-lib";
-import {
-  Website,
-  WebsiteProps,
-  DomainConfig,
-} from "../lib";
+import { Website, WebsiteProps, DomainConfig } from "../lib";
 
 describe("Website", () => {
   let app: cdk.App;

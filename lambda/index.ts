@@ -136,7 +136,10 @@ const chooseSlot = (
   slots: Array<SlotDefinition & { lease: SlotLease | null }>,
   repoPrKey: string,
   now: number,
-): { slot: SlotDefinition & { lease: SlotLease | null }; expectedLastUsedAt: number | null } => {
+): {
+  slot: SlotDefinition & { lease: SlotLease | null };
+  expectedLastUsedAt: number | null;
+} => {
   const existing = slots.find((slot) => slot.lease?.repoPrKey === repoPrKey);
   if (existing) {
     return {
@@ -146,7 +149,9 @@ const chooseSlot = (
   }
 
   const available = slots
-    .filter((slot) => !slot.lease || Number(slot.lease.leaseExpiresAt ?? 0) < now)
+    .filter(
+      (slot) => !slot.lease || Number(slot.lease.leaseExpiresAt ?? 0) < now,
+    )
     .sort(
       (a, b) =>
         Number(a.lease?.lastUsedAt ?? 0) - Number(b.lease?.lastUsedAt ?? 0),

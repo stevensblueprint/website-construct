@@ -314,17 +314,21 @@ export class PreviewEnvironment extends Construct {
         : bucket.bucketWebsiteUrl,
     }));
 
-    const leaseApiHandler = new lambda.Function(this, "PreviewLeaseApiHandler", {
-      runtime: lambda.Runtime.NODEJS_20_X,
-      handler: "index.handler",
-      timeout: cdk.Duration.seconds(15),
-      code: lambda.Code.fromAsset(path.join(__dirname, "..", "lambda")),
-      environment: {
-        TABLE_NAME: this.leaseTable.tableName,
-        SLOT_DEFINITIONS: JSON.stringify(slotDefinitions),
-        MAX_LEASE_MS: String(maxLeaseMs),
+    const leaseApiHandler = new lambda.Function(
+      this,
+      "PreviewLeaseApiHandler",
+      {
+        runtime: lambda.Runtime.NODEJS_20_X,
+        handler: "index.handler",
+        timeout: cdk.Duration.seconds(15),
+        code: lambda.Code.fromAsset(path.join(__dirname, "..", "lambda")),
+        environment: {
+          TABLE_NAME: this.leaseTable.tableName,
+          SLOT_DEFINITIONS: JSON.stringify(slotDefinitions),
+          MAX_LEASE_MS: String(maxLeaseMs),
+        },
       },
-    });
+    );
 
     this.leaseTable.grantReadWriteData(leaseApiHandler);
 

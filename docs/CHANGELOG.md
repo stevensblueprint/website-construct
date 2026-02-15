@@ -27,7 +27,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated tests to validate preview behavior via `Website.previewConfig` instead of constructing preview infrastructure directly.
 - Updated README preview usage to configure previews through `Website`.
 
-
 ## [v0.1.5]
 
 ### Added
