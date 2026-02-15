@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v0.1.6] - 2026-02-15
+
+### Added
+
+- `PreviewConfig` on `WebsiteProps` to enable pull request preview environments from the `Website` construct.
+- Preview slot infrastructure with configurable bucket pool size (`bucketCount`, default `2`), LRU lease behavior, and optional per-slot CloudFront distributions.
+- Preview lease API endpoints for CI workflows:
+  - `POST /claim`
+  - `POST /heartbeat`
+  - `POST /release`
+- DynamoDB-backed lease state with `RepoPrKeyIndex` for PR-to-slot lookup.
+- `previewEnvironment` exposure on `Website` for accessing endpoints and resources from downstream stacks.
+- `grantDeploymentAccess(...)` helper to grant CI principals access to preview buckets and CloudFront invalidation.
+
+### Changed
+
+- Refactored preview lease Lambda source from inline code to `lambda/index.ts` for better maintainability.
+- Updated tests to validate preview behavior via `Website.previewConfig` instead of constructing preview infrastructure directly.
+- Updated README preview usage to configure previews through `Website`.
+
 ## [v0.1.5]
 
 ### Added

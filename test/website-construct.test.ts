@@ -420,3 +420,143 @@ describe("Website", () => {
     });
   });
 });
+
+describe("Preview config on Website", () => {
+  let app: cdk.App;
+  let stack: cdk.Stack;
+
+  beforeEach(() => {
+    app = new cdk.App();
+    stack = new cdk.Stack(app, "PreviewTestStack", {
+      env: { account: "123456789012", region: "us-east-1" },
+    });
+  });
+
+  test("creates two preview buckets by default when previewConfig is enabled", () => {
+    const website = new Website(stack, "PreviewEnabledWebsite", {
+      bucketName: "website-bucket",
+      indexFile: "index.html",
+      errorFile: "error.html",
+      previewConfig: {
+        bucketPrefix: "preview-bucket",
+      },
+    });
+
+    const template = Template.fromStack(stack);
+    template.resourceCountIs("AWS::S3::Bucket", 3);
+    expect(website.previewEnvironment).toBeDefined();
+  });
+
+  test("creates requested number of preview buckets from previewConfig", () => {
+    new Website(stack, "PreviewEnabledWebsite", {
+      bucketName: "website-bucket",
+      indexFile: "index.html",
+      errorFile: "error.html",
+      previewConfig: {
+        bucketPrefix: "preview-bucket",
+        bucketCount: 3,
+      },
+    });
+
+    const template = Template.fromStack(stack);
+    template.resourceCountIs("AWS::S3::Bucket", 4);
+  });
+
+  test("reuses website index and error files for preview buckets", () => {
+    new Website(stack, "PreviewEnabledWebsite", {
+      bucketName: "website-bucket",
+      indexFile: "app.html",
+      errorFile: "fallback.html",
+      previewConfig: {
+        bucketPrefix: "preview-bucket",
+      },
+    });
+
+    const template = Template.fromStack(stack);
+    template.hasResourceProperties("AWS::S3::Bucket", {
+      BucketName: "preview-bucket-0",
+      WebsiteConfiguration: {
+        IndexDocument: "app.html",
+        ErrorDocument: "fallback.html",
+      },
+    });
+    template.hasResourceProperties("AWS::S3::Bucket", {
+      BucketName: "preview-bucket-1",
+      WebsiteConfiguration: {
+        IndexDocument: "app.html",
+        ErrorDocument: "fallback.html",
+      },
+    });
+  });
+
+  test("creates lease table with repo-pr lookup index when preview is enabled", () => {
+    new Website(stack, "PreviewEnabledWebsite", {
+      bucketName: "website-bucket",
+      indexFile: "index.html",
+      errorFile: "error.html",
+      previewConfig: {
+        bucketPrefix: "preview-bucket",
+      },
+    });
+
+    const template = Template.fromStack(stack);
+    template.hasResourceProperties("AWS::DynamoDB::Table", {
+      KeySchema: [
+        {
+          AttributeName: "slotId",
+          KeyType: "HASH",
+        },
+      ],
+      GlobalSecondaryIndexes: [
+        {
+          IndexName: "RepoPrKeyIndex",
+          KeySchema: [
+            {
+              AttributeName: "repoPrKey",
+              KeyType: "HASH",
+            },
+          ],
+          Projection: {
+            ProjectionType: "ALL",
+          },
+        },
+      ],
+    });
+  });
+
+  test("creates lease API routes when preview is enabled", () => {
+    new Website(stack, "PreviewEnabledWebsite", {
+      bucketName: "website-bucket",
+      indexFile: "index.html",
+      errorFile: "error.html",
+      previewConfig: {
+        bucketPrefix: "preview-bucket",
+      },
+    });
+
+    const template = Template.fromStack(stack);
+    template.hasResourceProperties("AWS::ApiGateway::Resource", {
+      PathPart: "claim",
+    });
+    template.hasResourceProperties("AWS::ApiGateway::Resource", {
+      PathPart: "heartbeat",
+    });
+    template.hasResourceProperties("AWS::ApiGateway::Resource", {
+      PathPart: "release",
+    });
+    template.resourceCountIs("AWS::ApiGateway::Method", 3);
+  });
+
+  test("does not create preview resources when previewConfig is omitted", () => {
+    const website = new Website(stack, "WebsiteWithoutPreview", {
+      bucketName: "website-bucket",
+      indexFile: "index.html",
+      errorFile: "error.html",
+    });
+
+    const template = Template.fromStack(stack);
+    template.resourceCountIs("AWS::DynamoDB::Table", 0);
+    template.resourceCountIs("AWS::ApiGateway::RestApi", 0);
+    expect(website.previewEnvironment).toBeUndefined();
+  });
+});
