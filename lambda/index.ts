@@ -9,7 +9,14 @@ type APIGatewayProxyResult = {
   body: string;
 };
 
-const AWS = require("aws-sdk");
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const {
+  DynamoDBDocumentClient,
+  QueryCommand,
+  BatchGetCommand,
+  UpdateCommand,
+  DeleteCommand,
+} = require("@aws-sdk/lib-dynamodb");
 
 type SlotDefinition = {
   slotId: number;
@@ -27,7 +34,10 @@ type SlotLease = {
   commitSha?: string;
 };
 
-const ddb = new AWS.DynamoDB.DocumentClient();
+const ddbClient = new DynamoDBClient({});
+const ddb = DynamoDBDocumentClient.from(ddbClient, {
+  marshallOptions: { removeUndefinedValues: true },
+});
 const tableName = process.env.TABLE_NAME ?? "";
 const slotDefinitions: SlotDefinition[] = JSON.parse(
   process.env.SLOT_DEFINITIONS ?? "[]",
@@ -84,8 +94,8 @@ const getReleaseBody = (body: Record<string, unknown>) => {
 const queryLeaseByRepoPr = async (
   repoPrKey: string,
 ): Promise<SlotLease | null> => {
-  const result = await ddb
-    .query({
+  const result = await ddb.send(
+    new QueryCommand({
       TableName: tableName,
       IndexName: "RepoPrKeyIndex",
       KeyConditionExpression: "repoPrKey = :repoPrKey",
@@ -93,8 +103,8 @@ const queryLeaseByRepoPr = async (
         ":repoPrKey": repoPrKey,
       },
       Limit: 1,
-    })
-    .promise();
+    }),
+  );
 
   if (!result.Items || result.Items.length === 0) {
     return null;
@@ -110,8 +120,8 @@ const loadSlots = async (): Promise<
     return [];
   }
 
-  const result = await ddb
-    .batchGet({
+  const result = await ddb.send(
+    new BatchGetCommand({
       RequestItems: {
         [tableName]: {
           Keys: slotDefinitions.map((slot) => ({
@@ -119,8 +129,8 @@ const loadSlots = async (): Promise<
           })),
         },
       },
-    })
-    .promise();
+    }),
+  );
 
   const tableItems = (result.Responses?.[tableName] ?? []) as SlotLease[];
   const bySlotId = new Map<string, SlotLease>();
@@ -216,16 +226,16 @@ const claim = async (
     }
 
     try {
-      await ddb
-        .update({
+      await ddb.send(
+        new UpdateCommand({
           TableName: tableName,
           Key: { slotId: String(slot.slotId) },
           UpdateExpression:
             "SET repo = :repo, prNumber = :prNumber, repoPrKey = :repoPrKey, commitSha = :commitSha, bucketName = :bucketName, previewUrl = :previewUrl, leasedAt = if_not_exists(leasedAt, :now), lastUsedAt = :now, leaseExpiresAt = :expiresAt, ttlEpochSeconds = :ttlEpochSeconds",
           ConditionExpression: conditionExpression,
           ExpressionAttributeValues: expressionAttributeValues,
-        })
-        .promise();
+        }),
+      );
 
       return ok({
         slotId: slot.slotId,
@@ -258,8 +268,8 @@ const heartbeat = async (
   }
 
   const now = nowMs();
-  await ddb
-    .update({
+  await ddb.send(
+    new UpdateCommand({
       TableName: tableName,
       Key: { slotId: existing.slotId },
       UpdateExpression:
@@ -272,8 +282,8 @@ const heartbeat = async (
         ":expiresAt": now + maxLeaseMs,
         ":ttlEpochSeconds": nowEpochSeconds() + Math.floor(maxLeaseMs / 1000),
       },
-    })
-    .promise();
+    }),
+  );
 
   return ok({
     slotId: existing.slotId,
@@ -296,16 +306,16 @@ const release = async (
     return ok({ released: false });
   }
 
-  await ddb
-    .delete({
+  await ddb.send(
+    new DeleteCommand({
       TableName: tableName,
       Key: { slotId: existing.slotId },
       ConditionExpression: "repoPrKey = :repoPrKey",
       ExpressionAttributeValues: {
         ":repoPrKey": repoPrKey,
       },
-    })
-    .promise();
+    }),
+  );
 
   return ok({ released: true, slotId: existing.slotId });
 };
