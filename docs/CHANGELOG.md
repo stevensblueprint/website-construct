@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v0.1.7] - 2026-02-16
+
+### Fix
+
+- Added S3 write permissions to api lambda
+
 ## [v0.1.6] - 2026-02-15
 
 ### Added
