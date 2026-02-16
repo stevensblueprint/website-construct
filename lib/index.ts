@@ -331,6 +331,7 @@ export class PreviewEnvironment extends Construct {
     );
 
     this.leaseTable.grantReadWriteData(leaseApiHandler);
+    this.buckets.forEach((b) => b.grantReadWrite(leaseApiHandler));
 
     this.api = new apigateway.RestApi(this, "PreviewLeaseApi", {
       restApiName: `${cdk.Names.uniqueId(this)}-preview-lease-api`,
