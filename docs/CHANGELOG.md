@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v0.1.8] - 2026-02-16
+
+### Fix
+
+- Updated aws library in lambda to `@aws-sdk/client-dynamodb` and `@aws-sdk/lib-dynamodb`
+
 ## [v0.1.7] - 2026-02-16
 
 ### Fix
