@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v0.1.8] - 2026-03-08
+
+### Changed
+
+- Relaxed `aws-cdk-lib` peer dependency from an exact version pin (`2.237.1`) to a range (`^2.0.0`) for compatibility with older CDK v2 projects.
+
+### Added
+
+- `distributionId` field exposed in claim and heartbeat API responses, and in `SlotDefinition`, so CI workflows can trigger CloudFront invalidations after deployment.
+- `cachePolicy: CACHING_DISABLED` on the main `Website` CloudFront distribution behavior (previously only applied to preview distributions).
+- README example updated to show CloudFront invalidation step using `distributionId` from the claim response.
+
 ## [v0.1.8] - 2026-02-16
 
 ### Fix
