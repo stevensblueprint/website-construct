@@ -92,6 +92,7 @@ export class WebsiteWithPreviewStack extends cdk.Stack {
 {
   "slotId": 0,
   "bucketName": "my-frontend-preview-0",
+  "distributionId": "EDFDVBD6EXAMPLE",
   "previewUrl": "https://....cloudfront.net"
 }
 ```
@@ -128,8 +129,12 @@ jobs:
           RESPONSE=$(curl -sS -X POST "$CLAIM_URL" -H "content-type: application/json" -d "{\"repo\":\"$REPO\",\"prNumber\":$PR,\"commitSha\":\"$SHA\"}")
           echo "$RESPONSE" > preview-slot.json
           BUCKET=$(jq -r '.bucketName' preview-slot.json)
+          DIST_ID=$(jq -r '.distributionId // empty' preview-slot.json)
           URL=$(jq -r '.previewUrl' preview-slot.json)
           aws s3 sync ./dist "s3://$BUCKET" --delete
+          if [ -n "$DIST_ID" ]; then
+            aws cloudfront create-invalidation --distribution-id "$DIST_ID" --paths "/*"
+          fi
           echo "Preview URL: $URL"
 ```
 

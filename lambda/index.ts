@@ -21,6 +21,7 @@ const {
 type SlotDefinition = {
   slotId: number;
   bucketName: string;
+  distributionId?: string;
   previewUrl: string;
 };
 
@@ -240,6 +241,7 @@ const claim = async (
       return ok({
         slotId: slot.slotId,
         bucketName: slot.bucketName,
+        distributionId: slot.distributionId,
         previewUrl: slot.previewUrl,
       });
     } catch (error) {
@@ -285,9 +287,14 @@ const heartbeat = async (
     }),
   );
 
+  const slotDef = slotDefinitions.find(
+    (s) => String(s.slotId) === existing.slotId,
+  );
+
   return ok({
     slotId: existing.slotId,
     bucketName: existing.bucketName,
+    distributionId: slotDef?.distributionId,
     previewUrl: existing.previewUrl,
   });
 };
