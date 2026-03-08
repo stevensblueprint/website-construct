@@ -281,6 +281,7 @@ export class PreviewEnvironment extends Construct {
                 origin: new origins.S3StaticWebsiteOrigin(bucket),
                 viewerProtocolPolicy:
                   cloudfont.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+                cachePolicy: cloudfont.CachePolicy.CACHING_DISABLED,
               },
               priceClass: cloudfont.PriceClass.PRICE_CLASS_100,
             },
@@ -309,6 +310,7 @@ export class PreviewEnvironment extends Construct {
     const slotDefinitions = this.buckets.map((bucket, slotId) => ({
       slotId,
       bucketName: bucket.bucketName,
+      distributionId: this.distributions[slotId]?.distributionId,
       previewUrl: this.distributions[slotId]
         ? `https://${this.distributions[slotId].distributionDomainName}`
         : bucket.bucketWebsiteUrl,
